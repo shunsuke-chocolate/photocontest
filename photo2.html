@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#MyNOSESHOPフォトコンテスト</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fff; 
+            color: #333; 
+        }
+        .header-background { 
+            background-color: #f8f8f8; 
+            border-bottom: 1px solid #eee;
+        }
+        .btn-primary { 
+            background-color: #000;
+            color: white;
+            border: 1px solid #000;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #333;
+            border-color: #333;
+        }
+        .btn-secondary { 
+            background-color: transparent;
+            color: #555;
+            border: 1px solid #ccc;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+        .btn-secondary.active { /* 選択中のフィルターボタンのスタイル */
+            background-color: #333;
+            color: white;
+            border-color: #333;
+        }
+
+        .carousel-container {
+            overflow: hidden;
+            width: 100%;
+        }
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel-item {
+            /* min-widthをTailwindクラスで設定 */
+            flex-shrink: 0;
+            margin-right: 1rem; /* 16px */
+            scroll-snap-align: start;
+        }
+        .gallery-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+            border: 1px solid #eee; 
+            overflow: hidden;
+        }
+        .gallery-card img {
+            width: 100%;
+            height: 180px; /* スマホ向けに少し高さを調整 */
+            sm:height: 200px;
+            object-fit: cover;
+        }
+        .category-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px; 
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-width: 1px;
+        }
+        .category-cool { border-color: #a5b4fc; color: #4f46e5; background-color: #e0e7ff50; }
+        .category-pop { border-color: #fcd34d; color: #d97706; background-color: #fef3c750; }
+        .category-natural { border-color: #86efac; color: #15803d; background-color: #dcfce750; }
+        .category-other { border-color: #d1d5db; color: #4b5563; background-color: #f3f4f650; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px; text-align: center; }
+        .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+        .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
+        .focus-ring-black:focus { outline-color: #333; --tw-ring-color: #333; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="header-background p-4 sm:p-6 text-center shadow-sm">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-black">#MyNOSESHOPフォトコンテスト</h1>
+        <p class="mt-2 text-sm sm:text-base md:text-lg text-gray-600">お気に入りの香水と日常のシーンを投稿しよう！</p>
+    </header>
+
+    <main class="container mx-auto px-3 py-4 sm:px-4 md:px-8 md:py-8">
+
+        <section id="submission-form-section" class="mb-8 sm:mb-12 p-4 sm:p-6 bg-white rounded-lg shadow-md border border-gray-200">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center text-black">作品を応募する</h2>
+            <form id="photoContestForm" class="space-y-4 sm:space-y-6">
+                <div>
+                    <label for="twitterAccount" class="block text-sm font-medium text-gray-700">Twitterアカウント名 (例: @NOSESHOP_JP)</label>
+                    <input type="text" name="twitterAccount" id="twitterAccount" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm" placeholder="@あなたのTwitterID">
+                </div>
+                <div>
+                    <label for="photoFile" class="block text-sm font-medium text-gray-700">写真 (香水と日常がテーマ)</label>
+                    <input type="file" name="photoFile" id="photoFile" accept="image/*" required class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:sm:text-sm file:font-semibold file:bg-gray-100 file:text-black hover:file:bg-gray-200 focus-ring-black">
+                    <img id="imagePreview" src="#" alt="プレビュー" class="mt-2 rounded-md max-h-40 sm:max-h-48 hidden"/>
+                </div>
+                <div>
+                    <label for="photoTitle" class="block text-sm font-medium text-gray-700">作品の題名</label>
+                    <input type="text" name="photoTitle" id="photoTitle" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm" placeholder="素敵な作品のタイトル">
+                </div>
+                <div>
+                    <label for="photoComment" class="block text-sm font-medium text-gray-700">コメント (任意)</label>
+                    <textarea name="photoComment" id="photoComment" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm" placeholder="作品に込めた想いなど"></textarea>
+                </div>
+                 <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">カテゴリ</label>
+                    <select name="category" id="category" required class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm">
+                        <option value="cool">クール</option>
+                        <option value="pop">ポップ</option>
+                        <option value="natural">ナチュラル</option>
+                        <option value="other">その他</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full btn-primary font-semibold py-2.5 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 text-base">応募する</button>
+            </form>
+        </section>
+
+        <section id="gallery-section" class="mb-8 sm:mb-12">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center text-black">みんなの投稿ギャラリー</h2>
+            
+            <div class="mb-4 sm:mb-6 text-center flex flex-wrap justify-center gap-1 sm:gap-2">
+                <button class="btn-secondary category-filter-btn py-1.5 px-2.5 text-xs sm:py-2 sm:px-4 sm:text-sm rounded-md" data-category="all">すべて</button>
+                <button class="btn-secondary category-filter-btn py-1.5 px-2.5 text-xs sm:py-2 sm:px-4 sm:text-sm rounded-md" data-category="new">新着作品</button>
+                <button class="btn-secondary category-filter-btn py-1.5 px-2.5 text-xs sm:py-2 sm:px-4 sm:text-sm rounded-md" data-category="cool">クール</button>
+                <button class="btn-secondary category-filter-btn py-1.5 px-2.5 text-xs sm:py-2 sm:px-4 sm:text-sm rounded-md" data-category="pop">ポップ</button>
+                <button class="btn-secondary category-filter-btn py-1.5 px-2.5 text-xs sm:py-2 sm:px-4 sm:text-sm rounded-md" data-category="natural">ナチュラル</button>
+            </div>
+
+            <div id="carouselContainer" class="carousel-container relative"> {/* group class removed as nav buttons are always visible */}
+                <div id="carouselTrack" class="carousel-track">
+                    </div>
+                <button id="prevBtn" class="absolute top-1/2 left-1 transform -translate-y-1/2 bg-white bg-opacity-60 hover:bg-opacity-90 p-1 sm:p-2 rounded-full shadow-md z-10 focus-ring-black">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+                <button id="nextBtn" class="absolute top-1/2 right-1 transform -translate-y-1/2 bg-white bg-opacity-60 hover:bg-opacity-90 p-1 sm:p-2 rounded-full shadow-md z-10 focus-ring-black">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
+            </div>
+             <p class="text-xs text-gray-500 mt-2 text-center">※ カルーセルは自動でスクロールします。マウスホバーで一時停止します。</p>
+        </section>
+
+        <section id="present-info" class="p-4 sm:p-6 bg-white rounded-lg shadow-md border border-gray-200">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-center text-black">豪華プレゼント</h2>
+            <div class="space-y-4 text-gray-700">
+                <div class="p-3 sm:p-4 border border-gray-300 rounded-md bg-gray-50">
+                    <h3 class="font-semibold text-base sm:text-lg text-black">🏆 最多得票賞 (1名様)</h3>
+                    <p class="text-sm sm:text-base">お好きな香水を1本プレゼント！ローンチ予定の新ブランドの香水もお選びいただけます。</p>
+                </div>
+                <div class="p-3 sm:p-4 border border-gray-300 rounded-md bg-gray-50">
+                    <h3 class="font-semibold text-base sm:text-lg text-black">🎁 投票参加賞 (抽選で複数名様)</h3>
+                    <p class="text-sm sm:text-base">写真投稿はせず投票だけでも参加OK！NOSESHOPの素敵なアイテムを抽選でプレゼントします。</p>
+                    <p class="text-xs sm:text-sm mt-1">※ まだNOSESHOPの香水を持っていない方も、ぜひお気軽にご参加ください！</p>
+                </div>
+            </div>
+            <p class="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-600">
+                結果発表はNOSESHOP公式サイトおよびSNSにて行います。お楽しみに！
+            </p>
+        </section>
+    </main>
+
+    <footer class="mt-8 sm:mt-12 p-4 sm:p-6 bg-gray-100 text-center border-t border-gray-200">
+        <p class="text-xs sm:text-sm text-gray-600">&copy; 2025 NOSESHOP. All Rights Reserved.</p>
+        <p class="text-xs text-gray-500 mt-1">このページはデモ用に作成されたものです。</p>
+    </footer>
+
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <p id="modalMessageText" class="text-sm sm:text-base"></p>
+            <button onclick="closeModal()" class="mt-4 btn-primary py-2 px-4 rounded-md text-sm sm:text-base">閉じる</button>
+        </div>
+    </div>
+
+    <script>
+        // --- グローバル変数・定数 ---
+        const photoContestForm = document.getElementById('photoContestForm');
+        const imagePreview = document.getElementById('imagePreview');
+        const photoFileInp = document.getElementById('photoFile');
+        const carouselContainer = document.getElementById('carouselContainer');
+        const carouselTrack = document.getElementById('carouselTrack');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const categoryFilterBtns = document.querySelectorAll('.category-filter-btn');
+        const modal = document.getElementById('messageModal');
+        const modalMessageText = document.getElementById('modalMessageText');
+
+        let submissions = [
+            { id: 1, twitter: '@perfume_lover', imageUrl: 'https://placehold.co/300x200/e0e0e0/333333?text=香りの朝', title: '香りの朝', comment: 'お気に入りの香水と朝のコーヒー。最高の1日の始まりです。', votes: 15, category: 'natural', timestamp: new Date('2025-05-01T10:00:00Z') },
+            { id: 2, twitter: '@daily_scent', imageUrl: 'https://placehold.co/300x200/e0e0e0/333333?text=読書と私', title: '読書と私のお供', comment: '静かな午後の読書タイム。この香りが落ち着きます。', votes: 22, category: 'cool', timestamp: new Date('2025-05-02T14:30:00Z') },
+            { id: 3, twitter: '@art_fragrance', imageUrl: 'https://placehold.co/300x200/e0e0e0/333333?text=街角スナップ', title: '街角スナップ', comment: '都市の喧騒と、ふわりと香る自由な気分。', votes: 8, category: 'pop', timestamp: new Date('2025-05-03T18:00:00Z') },
+            { id: 4, twitter: '@noseshop_fan', imageUrl: 'https://placehold.co/300x200/e0e0e0/333333?text=公園のひととき', title: '公園のひととき', comment: '緑の中で深呼吸。自然と調和する香り。', votes: 30, category: 'natural', timestamp: new Date('2025-05-04T12:15:00Z') },
+            { id: 5, twitter: '@happy_aroma', imageUrl: 'https://placehold.co/300x200/e0e0e0/333333?text=カラフルライフ', title: 'カラフルライフ', comment: 'ポップな香りで毎日を楽しく！お出かけ前の必需品。', votes: 12, category: 'pop', timestamp: new Date('2025-05-05T09:00:00Z') },
+            { id: 6, twitter: '@calm_moment', imageUrl: 'https://placehold.co/300x200/e0e0e0/333333?text=夜の静寂', title: '夜の静寂と香り', comment: '一日の終わりに、この香りでリラックス。', votes: 18, category: 'cool', timestamp: new Date('2025-05-06T22:00:00Z') },
+        ];
+
+        let currentFilter = 'all';
+        let autoScrollInterval;
+        let currentTrackPosition = 0;
+        let calculatedItemWidthAndMargin = 316; // Default, will be calculated
+        let numberOfOriginalItemsInCarousel = 0;
+
+        // --- イベントリスナー ---
+        photoFileInp.addEventListener('change', function(event) {
+            if (event.target.files && event.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(event.target.files[0]);
+            } else {
+                imagePreview.src = "#";
+                imagePreview.classList.add('hidden');
+            }
+        });
+        
+        photoContestForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const twitterAccount = document.getElementById('twitterAccount').value;
+            const photoFile = document.getElementById('photoFile').files[0];
+            const photoTitle = document.getElementById('photoTitle').value;
+            const photoComment = document.getElementById('photoComment').value;
+            const category = document.getElementById('category').value;
+
+            if (!twitterAccount || !photoFile || !photoTitle || !category) {
+                showMessageModal("必須項目をすべて入力してください。");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const newSubmission = {
+                    id: submissions.length + 1 + Math.floor(Math.random()*1000),
+                    twitter: twitterAccount,
+                    imageUrl: e.target.result,
+                    title: photoTitle,
+                    comment: photoComment,
+                    votes: 0,
+                    category: category,
+                    timestamp: new Date()
+                };
+                submissions.unshift(newSubmission);
+                renderGallery();
+                showMessageModal("応募が完了しました！ありがとうございます。");
+                photoContestForm.reset();
+                imagePreview.classList.add('hidden');
+            };
+            reader.readAsDataURL(photoFile);
+        });
+
+        categoryFilterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentFilter = btn.getAttribute('data-category');
+                document.querySelector('.category-filter-btn.active')?.classList.remove('active');
+                btn.classList.add('active');
+                renderGallery();
+            });
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (numberOfOriginalItemsInCarousel === 0) return;
+            currentTrackPosition += calculatedItemWidthAndMargin;
+            if (currentTrackPosition > 0) {
+                currentTrackPosition = 0;
+            }
+            carouselTrack.style.transform = `translateX(${currentTrackPosition}px)`;
+            stopAutoScroll();
+            startAutoScroll(); 
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (numberOfOriginalItemsInCarousel === 0) return;
+            moveToNextSlide(); // This already calls stop/start if needed or handles loop
+            stopAutoScroll();
+            startAutoScroll();
+        });
+
+        carouselContainer.addEventListener('mouseenter', stopAutoScroll);
+        carouselContainer.addEventListener('mouseleave', startAutoScroll);
+
+        // --- 関数 ---
+        function showMessageModal(message) {
+            modalMessageText.textContent = message;
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+        
+        function calculateDynamicItemWidth() {
+            if (carouselTrack.children.length > 0) {
+                const firstItem = carouselTrack.children[0];
+                const style = window.getComputedStyle(firstItem);
+                const marginRight = parseFloat(style.marginRight) || 0; // Ensure it's a number
+                return firstItem.offsetWidth + marginRight;
+            }
+            return 316; // Fallback: 300px item width + 16px margin
+        }
+
+        function renderGallery() {
+            stopAutoScroll(); 
+            carouselTrack.innerHTML = '';
+            let filteredSubmissions = submissions;
+
+            if (currentFilter === 'new') {
+                filteredSubmissions = [...submissions].sort((a, b) => b.timestamp - a.timestamp);
+            } else if (currentFilter !== 'all') {
+                filteredSubmissions = submissions.filter(s => s.category === currentFilter);
+            }
+            
+            numberOfOriginalItemsInCarousel = filteredSubmissions.length;
+
+            const itemsForDisplay = [...filteredSubmissions];
+            
+            // Populate with original items first to calculate width
+            itemsForDisplay.forEach(submission => {
+                const card = document.createElement('div');
+                // Apply responsive min-width using Tailwind classes
+                card.className = 'carousel-item gallery-card transform hover:scale-105 transition-transform duration-300 min-w-[260px] xs:min-w-[280px] sm:min-w-[300px]';
+                // ... (innerHTML for card remains largely the same, adjust image height class if needed)
+                let categoryClass = '';
+                let categoryText = submission.category.charAt(0).toUpperCase() + submission.category.slice(1);
+
+                switch(submission.category) {
+                    case 'cool': categoryClass = 'category-cool'; break;
+                    case 'pop': categoryClass = 'category-pop'; break;
+                    case 'natural': categoryClass = 'category-natural'; break;
+                    default: categoryClass = 'category-other'; categoryText = 'その他'; break;
+                }
+
+                card.innerHTML = `
+                    <img src="${submission.imageUrl}" alt="${submission.title}" class="w-full h-[180px] sm:h-[200px] object-cover" onerror="this.onerror=null;this.src='https://placehold.co/300x200/e0e0e0/777777?text=画像読込エラー';">
+                    <div class="p-2.5 sm:p-3">
+                        <h3 class="text-sm sm:text-base font-semibold mb-0.5 sm:mb-1 truncate" title="${submission.title}">${submission.title}</h3>
+                        <p class="text-xs text-gray-500 mb-0.5 sm:mb-1">投稿者: ${submission.twitter}</p>
+                        <p class="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2 h-8 sm:h-10 overflow-hidden">${submission.comment.substring(0, 40)}${submission.comment.length > 40 ? '...' : ''}</p>
+                        <div class="mb-2 sm:mb-3">
+                           <span class="category-tag ${categoryClass}">${categoryText}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <button class="btn-primary text-xs py-1 px-1.5 sm:py-1 sm:px-2 rounded-md vote-btn focus-ring-black" data-id="${submission.id}">
+                                投票する (<span class="vote-count">${submission.votes}</span>)
+                            </button>
+                            <span class="text-xs text-gray-400">ID: ${submission.id.toString().split('_')[0]}</span>
+                        </div>
+                    </div>
+                `;
+                carouselTrack.appendChild(card);
+            });
+
+            calculatedItemWidthAndMargin = calculateDynamicItemWidth(); // Calculate actual width
+
+            // Cloning logic based on calculated width
+            if (numberOfOriginalItemsInCarousel > 0 && carouselContainer.clientWidth > 0 && (numberOfOriginalItemsInCarousel * calculatedItemWidthAndMargin) > carouselContainer.clientWidth) {
+                const clones = filteredSubmissions.map(item => {
+                    const cloneCard = carouselTrack.querySelector(`.carousel-item[data-id="${item.id}"]`)?.cloneNode(true) 
+                                   || carouselTrack.children[0].cloneNode(true); // Fallback to cloning first if specific not found
+                    // Ensure cloned items also get unique IDs for their elements if necessary, but data-id should point to original
+                    // The card structure is simple enough that direct cloning should be fine.
+                    // Add a marker or different data-id for clones if needed for specific logic, but vote target is original id.
+                    return cloneCard;
+                });
+                 clones.forEach(clone => carouselTrack.appendChild(clone));
+            }
+
+
+            if (carouselTrack.children.length === 0) { // Check after attempting to populate
+                carouselTrack.innerHTML = '<p class="text-center text-gray-500 w-full py-8">このカテゴリの作品はまだありません。</p>';
+                updateCarouselNavVisibility(false);
+                return;
+            }
+            updateCarouselNavVisibility(carouselTrack.scrollWidth > carouselContainer.clientWidth);
+            
+            addVoteButtonListeners();
+            currentTrackPosition = 0;
+            carouselTrack.style.transition = 'none'; 
+            carouselTrack.style.transform = `translateX(0px)`;
+            carouselTrack.offsetHeight; 
+            carouselTrack.style.transition = 'transform 0.5s ease-in-out'; 
+            
+            startAutoScroll();
+        }
+        
+        function updateCarouselNavVisibility(show) {
+            const displayStyle = show ? 'block' : 'none';
+            prevBtn.style.display = displayStyle;
+            nextBtn.style.display = displayStyle;
+        }
+
+
+        function addVoteButtonListeners() {
+            document.querySelectorAll('.vote-btn').forEach(button => {
+                // Remove old listener before adding new one to prevent multiple fires
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+
+                newButton.addEventListener('click', function() {
+                    const submissionId = this.getAttribute('data-id');
+                    handleVote(submissionId);
+                });
+            });
+        }
+
+        function handleVote(submissionId) {
+            const actualIdString = submissionId.toString().split('_')[0];
+            const actualId = parseInt(actualIdString);
+            const submission = submissions.find(s => s.id.toString().startsWith(actualIdString)); 
+
+            if (submission) {
+                let votedItems = JSON.parse(localStorage.getItem('votedItems_mynoseshop') || '[]');
+                if (votedItems.includes(actualId)) {
+                    showMessageModal("この作品には既に投票済みです。");
+                    return;
+                }
+                submission.votes++;
+                votedItems.push(actualId);
+                localStorage.setItem('votedItems_mynoseshop', JSON.stringify(votedItems));
+                
+                document.querySelectorAll(`.vote-btn[data-id^="${actualIdString}"]`).forEach(btn => {
+                     btn.querySelector('.vote-count').textContent = submission.votes;
+                     btn.classList.remove('btn-primary'); 
+                     btn.classList.add('bg-gray-200', 'text-gray-500', 'border-gray-200', 'cursor-not-allowed'); 
+                     btn.disabled = true;
+                     btn.innerHTML = `投票済み (<span class="vote-count">${submission.votes}</span>)`;
+                });
+                showMessageModal(`「${submission.title}」に投票しました！`);
+            }
+        }
+        
+        function startAutoScroll() {
+            stopAutoScroll();
+            if (carouselTrack.scrollWidth > carouselContainer.clientWidth && numberOfOriginalItemsInCarousel > 0) {
+                 autoScrollInterval = setInterval(() => {
+                    moveToNextSlide();
+                }, 3000);
+            }
+        }
+
+        function stopAutoScroll() {
+            clearInterval(autoScrollInterval);
+        }
+        
+        function moveToNextSlide() {
+            if (numberOfOriginalItemsInCarousel === 0 || carouselTrack.scrollWidth <= carouselContainer.clientWidth) {
+                stopAutoScroll(); 
+                return;
+            }
+
+            currentTrackPosition -= calculatedItemWidthAndMargin; // Use dynamic width
+            carouselTrack.style.transform = `translateX(${currentTrackPosition}px)`;
+
+            // Loop condition based on original items and dynamic width
+            if (currentTrackPosition <= -(numberOfOriginalItemsInCarousel * calculatedItemWidthAndMargin)) {
+                const transitionEndHandler = () => {
+                    carouselTrack.removeEventListener('transitionend', transitionEndHandler); // Clean up
+                    
+                    carouselTrack.style.transition = 'none'; 
+                    currentTrackPosition += (numberOfOriginalItemsInCarousel * calculatedItemWidthAndMargin);
+                    carouselTrack.style.transform = `translateX(${currentTrackPosition}px)`;
+                    
+                    carouselTrack.offsetHeight; 
+                    requestAnimationFrame(() => { // Ensure transition is re-applied in next frame
+                        carouselTrack.style.transition = 'transform 0.5s ease-in-out';
+                    });
+                };
+                carouselTrack.addEventListener('transitionend', transitionEndHandler);
+            }
+        }
+
+        // --- 初期化処理 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGallery(); 
+            const initialFilterBtn = document.querySelector('.category-filter-btn[data-category="all"]');
+            if (initialFilterBtn) {
+                initialFilterBtn.classList.add('active');
+            }
+        });
+
+    </script>
+</body>
+</html>
